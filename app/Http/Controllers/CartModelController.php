@@ -1,66 +1,61 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Http\Request;
 use App\Models\CartModel;
-use App\Http\Requests\StoreCartModelRequest;
-use App\Http\Requests\UpdateCartModelRequest;
+use App\Models\ProductModel;
+use Illuminate\Support\Facades\Auth;
 
 class CartModelController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function showCart()
     {
-        //
+        $cartItems = CartModel::where('user_id', Auth::id())->with('product')->get();
+
+        return view('pages.cart', compact('cartItems'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function addIntoCart(Request $request)
     {
-        //
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $cartItem = CartModel::where('user_id', Auth::id())
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        if ($cartItem) {
+            $cartItem->quantity += $request->quantity;
+            $cartItem->save();
+        } else {
+            CartModel::create([
+                'user_id' => Auth::id(),
+                'product_id' => $request->product_id,
+                'quantity' => $request->quantity,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Item added to cart!');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreCartModelRequest $request)
+    public function update(Request $request, CartModel $cartModel)
     {
-        //
+        $request->validate([
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $cartModel->quantity = $request->quantity;
+        $cartModel->save();
+
+        return redirect()->back()->with('success', 'Cart updated successfully!');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(CartModel $cartModel)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(CartModel $cartModel)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCartModelRequest $request, CartModel $cartModel)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(CartModel $cartModel)
     {
-        //
+        $cartModel->delete();
+
+        return redirect()->back()->with('success', 'Item removed from cart!');
     }
 }

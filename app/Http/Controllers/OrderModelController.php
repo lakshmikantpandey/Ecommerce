@@ -5,23 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\OrderModel;
 use App\Http\Requests\StoreOrderModelRequest;
 use App\Http\Requests\UpdateOrderModelRequest;
+use Illuminate\Support\Facades\Auth;
 
 class OrderModelController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $orders = OrderModel::where('user_id', Auth::id())->get();
+
+        return view('pages.orders', compact('orders'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        // Show the form to create a new order
+        return view('pages.orders.create');
     }
 
     /**
@@ -29,7 +27,17 @@ class OrderModelController extends Controller
      */
     public function store(StoreOrderModelRequest $request)
     {
-        //
+        // Create a new order
+        $order = OrderModel::create([
+            'user_id' => Auth::id(),
+            'total' => $request->total,
+            'status' => 'pending', // Set initial status
+            // Add other order fields as necessary
+        ]);
+
+        // Optionally, you can handle related data, e.g., order items
+
+        return redirect()->route('orders.index')->with('success', 'Order created successfully!');
     }
 
     /**
@@ -37,7 +45,8 @@ class OrderModelController extends Controller
      */
     public function show(OrderModel $orderModel)
     {
-        //
+        // Show the details of a specific order
+        return view('pages.orders.show', compact('orderModel'));
     }
 
     /**
@@ -45,7 +54,8 @@ class OrderModelController extends Controller
      */
     public function edit(OrderModel $orderModel)
     {
-        //
+        // Show the form to edit the specified order
+        return view('pages.orders.edit', compact('orderModel'));
     }
 
     /**
@@ -53,7 +63,10 @@ class OrderModelController extends Controller
      */
     public function update(UpdateOrderModelRequest $request, OrderModel $orderModel)
     {
-        //
+        // Update the order details
+        $orderModel->update($request->validated());
+
+        return redirect()->route('orders.index')->with('success', 'Order updated successfully!');
     }
 
     /**
@@ -61,6 +74,9 @@ class OrderModelController extends Controller
      */
     public function destroy(OrderModel $orderModel)
     {
-        //
+        // Delete the specified order
+        $orderModel->delete();
+
+        return redirect()->route('orders.index')->with('success', 'Order deleted successfully!');
     }
 }

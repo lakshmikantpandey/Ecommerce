@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\UserModel;
 use App\Http\Requests\StoreUserModelRequest;
 use App\Http\Requests\UpdateUserModelRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserModelController extends Controller
 {
@@ -16,51 +18,55 @@ class UserModelController extends Controller
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function home()
     {
-        //
+        return view('pages.home');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreUserModelRequest $request)
+    public function about()
     {
-        //
+        return view('pages.about');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(UserModel $userModel)
+    public function shop()
     {
-        //
+        return view('pages.shop');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(UserModel $userModel)
+    public function shopDetails()
     {
-        //
+        return view('pages.shop-detail');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateUserModelRequest $request, UserModel $userModel)
+    public function contact()
     {
-        //
+        return view('pages.contact');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(UserModel $userModel)
+    public function notFound()
     {
-        //
+        return view('pages.404');
+    }
+
+    public function showLogin()
+    {
+        return view('login');
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials)) {
+            return redirect()->route('admin');
+        }
+
+        return back()->withErrors(['email' => 'Invalid login credentials']);
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        return redirect('/login');
     }
 }
